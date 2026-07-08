@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.MidiToggle" parent="android:Theme.Material.NoActionBar" />
+</resources>
