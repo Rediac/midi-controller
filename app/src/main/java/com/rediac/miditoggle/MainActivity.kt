@@ -2,8 +2,8 @@ package com.rediac.miditoggle
 
 import android.content.Context
 import android.media.midi.MidiDevice
-import android.media.midi.MidiInputPort
 import android.media.midi.MidiManager
+import android.media.midi.MidiOutputPort
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -36,25 +36,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/**
- * App de un solo botón toggle que envía un mensaje MIDI Control Change
- * por USB (android.media.midi) cada vez que se presiona:
- *   Canal 1  ->  CC 2  ->  Valor 127 (ON) / 0 (OFF)
- *
- * Requiere un dispositivo MIDI conectado por USB OTG (ej: MG-300 MKII).
- */
 class MainActivity : ComponentActivity() {
 
     private lateinit var midiManager: MidiManager
     private var midiDevice: MidiDevice? = null
-    private var inputPort: MidiInputPort? = null
+    private var outputPort: MidiOutputPort? = null
     private val handler = Handler(Looper.getMainLooper())
 
-    // ---- Configuración del mensaje MIDI ----
-    private val midiChannel = 0   // 0 = Canal 1 (los canales MIDI son 0-indexados a bajo nivel)
-    private val ccNumber = 2      // CC 2
-    private val onValue = 127     // Valor al activar
-    private val offValue = 0      // Valor al desactivar
+    private val midiChannel = 0
+    private val ccNumber = 2
+    private val onValue = 127
+    private val offValue = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,17 +100,17 @@ class MainActivity : ComponentActivity() {
                 return@openDevice
             }
             midiDevice = device
-            inputPort = device.openInputPort(0)
-            onResult(inputPort != null)
+            outputPort = device.openOutputPort(0)  // ← CORREGIDO: OutputPort
+            onResult(outputPort != null)
         }, handler)
     }
 
     private fun sendCc(channel: Int, cc: Int, value: Int) {
-        val port = inputPort ?: return
+        val port = outputPort ?: return  // ← CORREGIDO: outputPort
         val statusByte = (0xB0 or (channel and 0x0F)).toByte()
         val message = byteArrayOf(statusByte, cc.toByte(), value.toByte())
         try {
-            port.send(message, 0, message.size)
+            port.send(message, 0, message.size)  // ← MidiOutputPort sí tiene send()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -126,7 +118,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        inputPort?.close()
+        outputPort?.close()  // ← CORREGIDO: outputPort
         midiDevice?.close()
     }
 }
