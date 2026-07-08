@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.midi.MidiDevice
 import android.media.midi.MidiManager
 import android.media.midi.MidiOutputPort
+import android.media.midi.MidiReceiver
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -100,17 +101,20 @@ class MainActivity : ComponentActivity() {
                 return@openDevice
             }
             midiDevice = device
-            outputPort = device.openOutputPort(0)  // ← CORREGIDO: OutputPort
+            outputPort = device.openOutputPort(0)
             onResult(outputPort != null)
         }, handler)
     }
 
     private fun sendCc(channel: Int, cc: Int, value: Int) {
-        val port = outputPort ?: return  // ← CORREGIDO: outputPort
+        val port = outputPort ?: return
         val statusByte = (0xB0 or (channel and 0x0F)).toByte()
         val message = byteArrayOf(statusByte, cc.toByte(), value.toByte())
         try {
-            port.send(message, 0, message.size)  // ← MidiOutputPort sí tiene send()
+            val receiver = port.javaClass
+                .getMethod("getReceiver")
+                .invoke(port) as? MidiReceiver
+            receiver?.send(message, 0, message.size)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -118,7 +122,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        outputPort?.close()  // ← CORREGIDO: outputPort
+        outputPort?.close()
         midiDevice?.close()
     }
 }
