@@ -129,8 +129,12 @@ class MainActivity : AppCompatActivity() {
         for (i in banks.indices) {
             val btn = Button(this).apply {
                 text = banks[i].name
-                textSize = 11f
-                setPadding(12, 8, 12, 8)
+                textSize = 12f
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                setPadding(16, 12, 16, 12)
                 if (i == currentBankIndex) {
                     setBackgroundColor(Color.parseColor("#FF6B35"))
                     setTextColor(Color.WHITE)
