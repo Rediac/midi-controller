@@ -162,11 +162,11 @@ class MainActivity : AppCompatActivity() {
     private fun highlightBank() {
         for (i in bankButtons.indices) {
             if (i == currentBankIndex) {
-                bankButtons[i].setBackgroundColor(Color.parseColor("#FF6B35"))
+                bankButtons[i].setBackgroundColor(Color.parseColor("#0288D1"))
                 bankButtons[i].setTextColor(Color.WHITE)
             } else {
-                bankButtons[i].setBackgroundColor(Color.parseColor("#333333"))
-                bankButtons[i].setTextColor(Color.parseColor("#B0B0B0"))
+                bankButtons[i].setBackgroundColor(Color.parseColor("#4FC3F7"))
+                bankButtons[i].setTextColor(Color.WHITE)
             }
         }
     }
