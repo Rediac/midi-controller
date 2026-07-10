@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
@@ -30,10 +31,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnToggle: Button
     private lateinit var btnUp: Button
     private lateinit var btnDown: Button
-    private lateinit var btnBankUp: Button
-    private lateinit var btnBankDown: Button
+    private lateinit var bankChain: LinearLayout
     private lateinit var tvPedalName: TextView
-    private lateinit var tvBankName: TextView
     private lateinit var tvStatus: TextView
     private lateinit var knobsContainer: LinearLayout
     private lateinit var knobBuilder: KnobBuilder
@@ -65,13 +64,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         tvStatus = findViewById(R.id.tvStatus)
-        tvBankName = findViewById(R.id.tvBankName)
         tvPedalName = findViewById(R.id.tvPedalName)
         btnToggle = findViewById(R.id.btnToggle)
         btnUp = findViewById(R.id.btnUp)
         btnDown = findViewById(R.id.btnDown)
-        btnBankUp = findViewById(R.id.btnBankUp)
-        btnBankDown = findViewById(R.id.btnBankDown)
+        bankChain = findViewById(R.id.bankChain)
         knobsContainer = findViewById(R.id.knobsContainer)
 
         knobBuilder = KnobBuilder(this, midiSender, knobsContainer)
@@ -124,15 +121,38 @@ class MainActivity : AppCompatActivity() {
         btnToggle.isEnabled = enabled
         btnUp.isEnabled = enabled
         btnDown.isEnabled = enabled
-        btnBankUp.isEnabled = enabled
-        btnBankDown.isEnabled = enabled
+    }
+
+    private fun buildBankChain() {
+        bankChain.removeAllViews()
+        for (i in banks.indices) {
+            val btn = Button(this).apply {
+                text = banks[i].name
+                textSize = 11f
+                setPadding(8, 4, 8, 4)
+                if (i == currentBankIndex) {
+                    setBackgroundColor(Color.parseColor("#FF6B35"))
+                    setTextColor(Color.WHITE)
+                } else {
+                    setBackgroundColor(Color.parseColor("#333333"))
+                    setTextColor(Color.parseColor("#B0B0B0"))
+                }
+                setOnClickListener {
+                    currentBankIndex = i
+                    currentPedalIndex = 0
+                    updateDisplay()
+                    buildBankChain()
+                }
+            }
+            bankChain.addView(btn)
+        }
     }
 
     private fun updateDisplay() {
-        tvBankName.text = currentBank.name
         tvPedalName.text = currentPedal.name
         btnToggle.text = "OFF"
         toggleOn = false
+        buildBankChain()
         knobBuilder.build(currentPedal)
     }
 
@@ -166,22 +186,6 @@ class MainActivity : AppCompatActivity() {
                 midiSender.sendPedalOn(currentPedal.toggleCC, currentPedal.pedalIndex)
                 toggleOn = true
                 btnToggle.text = "ON"
-            }
-        }
-
-        btnBankUp.setOnClickListener {
-            if (currentBankIndex < banks.size - 1) {
-                currentBankIndex++
-                currentPedalIndex = 0
-                updateDisplay()
-            }
-        }
-
-        btnBankDown.setOnClickListener {
-            if (currentBankIndex > 0) {
-                currentBankIndex--
-                currentPedalIndex = 0
-                updateDisplay()
             }
         }
     }
