@@ -21,43 +21,14 @@
             android:layout_marginBottom="5dp"
             android:gravity="center" />
 
+        <!-- Cadena de efectos horizontal -->
         <LinearLayout
-            android:layout_width="200dp"
+            android:id="@+id/bankChain"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="horizontal"
-            android:layout_marginBottom="5dp">
-
-            <Button
-                android:id="@+id/btnBankDown"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:text="◀"
-                android:textSize="16sp"
-                android:enabled="false" />
-
-            <TextView
-                android:id="@+id/tvBankName"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="2"
-                android:text="NG"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#FF6B35"
-                android:gravity="center" />
-
-            <Button
-                android:id="@+id/btnBankUp"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:text="▶"
-                android:textSize="16sp"
-                android:enabled="false" />
-
-        </LinearLayout>
+            android:layout_marginBottom="5dp" />
 
         <Button
             android:id="@+id/btnToggle"
