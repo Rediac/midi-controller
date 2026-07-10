@@ -6,9 +6,16 @@
 
 <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="10dp" android:scrollbars="none">
 <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center" android:orientation="horizontal">
-<Button android:id="@+id/btnBankNG" android:layout_width="wrap_content" android:layout_height="40dp" android:text="NG" android:textSize="12sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankCMP" android:layout_width="wrap_content" android:layout_height="40dp" android:text="CMP" android:textSize="12sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankEFX" android:layout_width="wrap_content" android:layout_height="40dp" android:text="EFX" android:textSize="12sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankNG" android:layout_width="10mm" android:layout_height="10mm" android:text="NG" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankCMP" android:layout_width="10mm" android:layout_height="10mm" android:text="CMP" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankEFX" android:layout_width="10mm" android:layout_height="10mm" android:text="EFX" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankAMP" android:layout_width="10mm" android:layout_height="10mm" android:text="AMP" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankIR" android:layout_width="10mm" android:layout_height="10mm" android:text="IR" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankEQ" android:layout_width="10mm" android:layout_height="10mm" android:text="EQ" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankMOD" android:layout_width="10mm" android:layout_height="10mm" android:text="MOD" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankDLY" android:layout_width="10mm" android:layout_height="10mm" android:text="DLY" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankRVB" android:layout_width="10mm" android:layout_height="10mm" android:text="RVB" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
+<Button android:id="@+id/btnBankPL" android:layout_width="10mm" android:layout_height="10mm" android:text="PL" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
 </LinearLayout>
 </HorizontalScrollView>
 
