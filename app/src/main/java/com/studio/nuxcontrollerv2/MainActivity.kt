@@ -31,7 +31,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnToggle: Button
     private lateinit var btnUp: Button
     private lateinit var btnDown: Button
-    private lateinit var bankChain: LinearLayout
+    private lateinit var btnBankNG: Button
+    private lateinit var btnBankCMP: Button
+    private lateinit var btnBankEFX: Button
     private lateinit var tvPedalName: TextView
     private lateinit var tvStatus: TextView
     private lateinit var knobsContainer: LinearLayout
@@ -68,7 +70,9 @@ class MainActivity : AppCompatActivity() {
         btnToggle = findViewById(R.id.btnToggle)
         btnUp = findViewById(R.id.btnUp)
         btnDown = findViewById(R.id.btnDown)
-        bankChain = findViewById(R.id.bankChain)
+        btnBankNG = findViewById(R.id.btnBankNG)
+        btnBankCMP = findViewById(R.id.btnBankCMP)
+        btnBankEFX = findViewById(R.id.btnBankEFX)
         knobsContainer = findViewById(R.id.knobsContainer)
 
         knobBuilder = KnobBuilder(this, midiSender, knobsContainer)
@@ -110,7 +114,7 @@ class MainActivity : AppCompatActivity() {
                     midiSender.setConnection(connection, endpointOut)
                     tvStatus.text = "Conectado: ${device.productName}"
                     enableAll(true)
-                    buildBankChain()
+                    highlightBank()
                     updateDisplay()
                     return
                 }
@@ -122,33 +126,21 @@ class MainActivity : AppCompatActivity() {
         btnToggle.isEnabled = enabled
         btnUp.isEnabled = enabled
         btnDown.isEnabled = enabled
+        btnBankNG.isEnabled = enabled
+        btnBankCMP.isEnabled = enabled
+        btnBankEFX.isEnabled = enabled
     }
 
-    private fun buildBankChain() {
-        bankChain.removeAllViews()
-        for (i in banks.indices) {
-            val btn = Button(this).apply {
-                text = banks[i].name
-                textSize = 12f
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                setPadding(16, 12, 16, 12)
-                if (i == currentBankIndex) {
-                    setBackgroundColor(Color.parseColor("#FF6B35"))
-                    setTextColor(Color.WHITE)
-                } else {
-                    setBackgroundColor(Color.parseColor("#333333"))
-                    setTextColor(Color.parseColor("#B0B0B0"))
-                }
-                setOnClickListener {
-                    currentBankIndex = i
-                    currentPedalIndex = 0
-                    updateDisplay()
-                }
+    private fun highlightBank() {
+        val buttons = listOf(btnBankNG, btnBankCMP, btnBankEFX)
+        for (i in buttons.indices) {
+            if (i == currentBankIndex) {
+                buttons[i].setBackgroundColor(Color.parseColor("#FF6B35"))
+                buttons[i].setTextColor(Color.WHITE)
+            } else {
+                buttons[i].setBackgroundColor(Color.parseColor("#333333"))
+                buttons[i].setTextColor(Color.parseColor("#B0B0B0"))
             }
-            bankChain.addView(btn)
         }
     }
 
@@ -156,7 +148,7 @@ class MainActivity : AppCompatActivity() {
         tvPedalName.text = currentPedal.name
         btnToggle.text = "OFF"
         toggleOn = false
-        buildBankChain()
+        highlightBank()
         knobBuilder.build(currentPedal)
     }
 
@@ -191,6 +183,24 @@ class MainActivity : AppCompatActivity() {
                 toggleOn = true
                 btnToggle.text = "ON"
             }
+        }
+
+        btnBankNG.setOnClickListener {
+            currentBankIndex = 0
+            currentPedalIndex = 0
+            updateDisplay()
+        }
+
+        btnBankCMP.setOnClickListener {
+            currentBankIndex = 1
+            currentPedalIndex = 0
+            updateDisplay()
+        }
+
+        btnBankEFX.setOnClickListener {
+            currentBankIndex = 2
+            currentPedalIndex = 0
+            updateDisplay()
         }
     }
 
