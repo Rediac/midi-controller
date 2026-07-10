@@ -17,6 +17,7 @@ import com.studio.nuxcontrollerv2.data.CompressorData
 import com.studio.nuxcontrollerv2.data.EffectsData
 import com.studio.nuxcontrollerv2.data.NoiseGateData
 import com.studio.nuxcontrollerv2.models.PedalBank
+import com.studio.nuxcontrollerv2.models.PedalInfo
 import com.studio.nuxcontrollerv2.ui.KnobBuilder
 
 class MainActivity : AppCompatActivity() {
@@ -37,7 +38,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var knobsContainer: LinearLayout
     private lateinit var knobBuilder: KnobBuilder
 
-    // 10 botones de banco
     private lateinit var btnBankNG: Button
     private lateinit var btnBankCMP: Button
     private lateinit var btnBankEFX: Button
@@ -51,7 +51,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var bankButtons: List<Button>
 
-    // Bancos vacíos por ahora, solo NG, CMP, EFX tienen datos
     private val banks = listOf(
         NoiseGateData.bank,
         CompressorData.bank,
@@ -66,7 +65,8 @@ class MainActivity : AppCompatActivity() {
     )
 
     private val currentBank get() = banks[currentBankIndex]
-    private val currentPedal get() = currentBank.pedals.getOrNull(currentPedalIndex) ?: PedalBank("", emptyList()).pedals.firstOrNull() ?: return@get PedalBank("", emptyList()).pedals.first()
+    private val currentPedal: PedalInfo?
+        get() = currentBank.pedals.getOrNull(currentPedalIndex)
 
     private val ACTION_USB_PERMISSION = "com.studio.nuxcontrollerv2.USB_PERMISSION"
 
@@ -172,7 +172,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateDisplay() {
-        val pedal = banks[currentBankIndex].pedals.getOrNull(currentPedalIndex)
+        val pedal = currentPedal
         if (pedal != null) {
             tvPedalName.text = pedal.name
             btnToggle.text = "OFF"
@@ -189,7 +189,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupButtons() {
         btnToggle.setOnClickListener {
-            val pedal = banks[currentBankIndex].pedals.getOrNull(currentPedalIndex) ?: return@setOnClickListener
+            val pedal = currentPedal ?: return@setOnClickListener
             if (toggleOn) {
                 midiSender.sendPedalOff(pedal.toggleCC, pedal.pedalIndex)
                 toggleOn = false
@@ -206,7 +206,7 @@ class MainActivity : AppCompatActivity() {
             if (size > 0 && currentPedalIndex < size - 1) {
                 currentPedalIndex++
                 updateDisplay()
-                val p = currentBank.pedals[currentPedalIndex]
+                val p = currentPedal ?: return@setOnClickListener
                 midiSender.sendPedalOn(p.toggleCC, p.pedalIndex)
                 toggleOn = true
                 btnToggle.text = "ON"
@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity() {
             if (currentPedalIndex > 0) {
                 currentPedalIndex--
                 updateDisplay()
-                val p = currentBank.pedals[currentPedalIndex]
+                val p = currentPedal ?: return@setOnClickListener
                 midiSender.sendPedalOn(p.toggleCC, p.pedalIndex)
                 toggleOn = true
                 btnToggle.text = "ON"
