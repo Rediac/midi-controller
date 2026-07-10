@@ -18,22 +18,22 @@ class KnobView(context: Context, private val label: String, private val onValueC
     private var startAngle = -135f
     private var sweepAngle = 270f
     private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE; strokeWidth = 8f; color = Color.parseColor("#333333")
+        style = Paint.Style.STROKE; strokeWidth = 12f; color = Color.parseColor("#333333")
     }
     private val progressPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE; strokeWidth = 8f; strokeCap = Paint.Cap.ROUND; color = Color.parseColor("#FF6B35")
+        style = Paint.Style.STROKE; strokeWidth = 12f; strokeCap = Paint.Cap.ROUND; color = Color.parseColor("#FF6B35")
     }
     private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL; color = Color.WHITE
     }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE; textSize = 24f; textAlign = Paint.Align.CENTER
+        color = Color.WHITE; textSize = 42f; textAlign = Paint.Align.CENTER
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val size = min(width, height).toFloat()
-        val padding = 20f
+        val padding = 35f
         val oval = RectF(padding, padding, size - padding, size - padding)
         canvas.drawArc(oval, startAngle, sweepAngle, false, trackPaint)
         val progressAngle = sweepAngle * (value / 100f)
@@ -42,8 +42,8 @@ class KnobView(context: Context, private val label: String, private val onValueC
         val radius = (size - padding * 2) / 2
         val cx = width / 2f + radius * cos(dotAngle).toFloat()
         val cy = height / 2f + radius * sin(dotAngle).toFloat()
-        canvas.drawCircle(cx, cy, 6f, dotPaint)
-        canvas.drawText("${value.toInt()}", width / 2f, height / 2f + 8f, textPaint)
+        canvas.drawCircle(cx, cy, 10f, dotPaint)
+        canvas.drawText("${value.toInt()}", width / 2f, height / 2f + 14f, textPaint)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -64,7 +64,7 @@ class KnobView(context: Context, private val label: String, private val onValueC
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val size = 140
+        val size = 280
         setMeasuredDimension(size, size)
     }
 }
