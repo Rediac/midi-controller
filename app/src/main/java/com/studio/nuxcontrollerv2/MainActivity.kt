@@ -110,6 +110,7 @@ class MainActivity : AppCompatActivity() {
                     midiSender.setConnection(connection, endpointOut)
                     tvStatus.text = "Conectado: ${device.productName}"
                     enableAll(true)
+                    buildBankChain()
                     updateDisplay()
                     return
                 }
@@ -129,7 +130,7 @@ class MainActivity : AppCompatActivity() {
             val btn = Button(this).apply {
                 text = banks[i].name
                 textSize = 11f
-                setPadding(8, 4, 8, 4)
+                setPadding(12, 8, 12, 8)
                 if (i == currentBankIndex) {
                     setBackgroundColor(Color.parseColor("#FF6B35"))
                     setTextColor(Color.WHITE)
@@ -141,7 +142,6 @@ class MainActivity : AppCompatActivity() {
                     currentBankIndex = i
                     currentPedalIndex = 0
                     updateDisplay()
-                    buildBankChain()
                 }
             }
             bankChain.addView(btn)
