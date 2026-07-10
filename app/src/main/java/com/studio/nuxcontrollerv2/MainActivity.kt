@@ -1,181 +1,194 @@
-package com.rediac.miditoggle
+package com.studio.nuxcontrollerv2
 
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
-import android.media.midi.MidiDevice
-import android.media.midi.MidiManager
-import android.media.midi.MidiOutputPort
-import android.media.midi.MidiReceiver
+import android.content.Intent
+import android.content.IntentFilter
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbManager
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.studio.nuxcontrollerv2.data.CompressorData
+import com.studio.nuxcontrollerv2.data.EffectsData
+import com.studio.nuxcontrollerv2.data.NoiseGateData
+import com.studio.nuxcontrollerv2.ui.KnobBuilder
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
-    private lateinit var midiManager: MidiManager
-    private var midiDevice: MidiDevice? = null
-    private var outputPort: MidiOutputPort? = null
-    private val handler = Handler(Looper.getMainLooper())
+    private lateinit var usbManager: UsbManager
+    private var connection: android.hardware.usb.UsbDeviceConnection? = null
+    private var endpointOut: android.hardware.usb.UsbEndpoint? = null
+    private val midiSender = MidiSender()
+    private var currentBankIndex = 0
+    private var currentPedalIndex = 0
+    private var toggleOn = false
 
-    private val midiChannel = 0
-    private val ccNumber = 2
-    private val onValue = 127
-    private val offValue = 0
+    private lateinit var btnToggle: Button
+    private lateinit var btnUp: Button
+    private lateinit var btnDown: Button
+    private lateinit var btnBankUp: Button
+    private lateinit var btnBankDown: Button
+    private lateinit var tvPedalName: TextView
+    private lateinit var tvBankName: TextView
+    private lateinit var tvStatus: TextView
+    private lateinit var knobsContainer: LinearLayout
+    private lateinit var knobBuilder: KnobBuilder
+
+    private val banks = listOf(
+        NoiseGateData.bank,
+        CompressorData.bank,
+        EffectsData.bank
+    )
+
+    private val currentBank get() = banks[currentBankIndex]
+    private val currentPedal get() = currentBank.pedals[currentPedalIndex]
+
+    private val ACTION_USB_PERMISSION = "com.studio.nuxcontrollerv2.USB_PERMISSION"
+
+    private val permissionReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (ACTION_USB_PERMISSION == intent.action) {
+                val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
+                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                    device?.let { connectToDevice(it) }
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        midiManager = getSystemService(Context.MIDI_SERVICE) as MidiManager
+        tvStatus = findViewById(R.id.tvStatus)
+        tvBankName = findViewById(R.id.tvBankName)
+        tvPedalName = findViewById(R.id.tvPedalName)
+        btnToggle = findViewById(R.id.btnToggle)
+        btnUp = findViewById(R.id.btnUp)
+        btnDown = findViewById(R.id.btnDown)
+        btnBankUp = findViewById(R.id.btnBankUp)
+        btnBankDown = findViewById(R.id.btnBankDown)
+        knobsContainer = findViewById(R.id.knobsContainer)
 
-        setContent {
-            var isOn by remember { mutableStateOf(false) }
-            var status by remember { mutableStateOf("Buscando dispositivo MIDI…") }
+        knobBuilder = KnobBuilder(this, midiSender, knobsContainer)
+        usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
 
-            LaunchedEffect(Unit) {
-                connectToFirstDevice { connected ->
-                    status = if (connected) "Conectado" else "Sin dispositivo MIDI"
-                }
-            }
+        registerReceiver(permissionReceiver, IntentFilter(ACTION_USB_PERMISSION))
 
-            MaterialTheme(colorScheme = darkColorScheme()) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF0A0A0A)
-                ) {
-                    ToggleScreen(
-                        isOn = isOn,
-                        status = status,
-                        ccNumber = ccNumber,
-                        onValue = onValue,
-                        offValue = offValue,
-                        onToggle = {
-                            isOn = !isOn
-                            sendCc(
-                                channel = midiChannel,
-                                cc = ccNumber,
-                                value = if (isOn) onValue else offValue
-                            )
-                        }
-                    )
-                }
-            }
-        }
+        setupButtons()
+        findDevice()
     }
 
-    private fun connectToFirstDevice(onResult: (Boolean) -> Unit) {
-        val devices = midiManager.devices
+    private fun findDevice() {
+        val devices = usbManager.deviceList
         if (devices.isEmpty()) {
-            onResult(false)
+            tvStatus.text = "No hay dispositivos USB"
             return
         }
-        midiManager.openDevice(devices[0], { device ->
-            if (device == null) {
-                onResult(false)
-                return@openDevice
-            }
-            midiDevice = device
-            outputPort = device.openOutputPort(0)
-            onResult(outputPort != null)
-        }, handler)
+        val device = devices.values.first()
+        tvStatus.text = "Encontrado: ${device.productName}"
+        if (usbManager.hasPermission(device)) connectToDevice(device)
+        else requestPermission(device)
     }
 
-    private fun sendCc(channel: Int, cc: Int, value: Int) {
-        val port = outputPort ?: return
-        val statusByte = (0xB0 or (channel and 0x0F)).toByte()
-        val message = byteArrayOf(statusByte, cc.toByte(), value.toByte())
-        try {
-            val receiver = port.javaClass
-                .getMethod("getReceiver")
-                .invoke(port) as? MidiReceiver
-            receiver?.send(message, 0, message.size)
-        } catch (e: Exception) {
-            e.printStackTrace()
+    private fun requestPermission(device: UsbDevice) {
+        val pi = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE)
+        usbManager.requestPermission(device, pi)
+    }
+
+    private fun connectToDevice(device: UsbDevice) {
+        connection = usbManager.openDevice(device) ?: return
+        for (i in 0 until device.interfaceCount) {
+            val intf = device.getInterface(i)
+            connection?.claimInterface(intf, true)
+            for (j in 0 until intf.endpointCount) {
+                val ep = intf.getEndpoint(j)
+                if (ep.direction == android.hardware.usb.UsbConstants.USB_DIR_OUT &&
+                    ep.type == android.hardware.usb.UsbConstants.USB_ENDPOINT_XFER_BULK) {
+                    endpointOut = ep
+                    midiSender.setConnection(connection, endpointOut)
+                    tvStatus.text = "Conectado: ${device.productName}"
+                    enableAll(true)
+                    updateDisplay()
+                    return
+                }
+            }
+        }
+    }
+
+    private fun enableAll(enabled: Boolean) {
+        btnToggle.isEnabled = enabled
+        btnUp.isEnabled = enabled
+        btnDown.isEnabled = enabled
+        btnBankUp.isEnabled = enabled
+        btnBankDown.isEnabled = enabled
+    }
+
+    private fun updateDisplay() {
+        tvBankName.text = currentBank.name
+        tvPedalName.text = currentPedal.name
+        btnToggle.text = "OFF"
+        toggleOn = false
+        knobBuilder.build(currentPedal)
+    }
+
+    private fun setupButtons() {
+        btnToggle.setOnClickListener {
+            if (toggleOn) {
+                midiSender.sendPedalOff(currentPedal.toggleCC, currentPedal.pedalIndex)
+                toggleOn = false
+                btnToggle.text = "OFF"
+            } else {
+                midiSender.sendPedalOn(currentPedal.toggleCC, currentPedal.pedalIndex)
+                toggleOn = true
+                btnToggle.text = "ON"
+            }
+        }
+
+        btnUp.setOnClickListener {
+            if (currentPedalIndex < currentBank.pedals.size - 1) {
+                currentPedalIndex++
+                updateDisplay()
+                midiSender.sendPedalOn(currentPedal.toggleCC, currentPedal.pedalIndex)
+                toggleOn = true
+                btnToggle.text = "ON"
+            }
+        }
+
+        btnDown.setOnClickListener {
+            if (currentPedalIndex > 0) {
+                currentPedalIndex--
+                updateDisplay()
+                midiSender.sendPedalOn(currentPedal.toggleCC, currentPedal.pedalIndex)
+                toggleOn = true
+                btnToggle.text = "ON"
+            }
+        }
+
+        btnBankUp.setOnClickListener {
+            if (currentBankIndex < banks.size - 1) {
+                currentBankIndex++
+                currentPedalIndex = 0
+                updateDisplay()
+            }
+        }
+
+        btnBankDown.setOnClickListener {
+            if (currentBankIndex > 0) {
+                currentBankIndex--
+                currentPedalIndex = 0
+                updateDisplay()
+            }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        outputPort?.close()
-        midiDevice?.close()
-    }
-}
-
-@Composable
-private fun ToggleScreen(
-    isOn: Boolean,
-    status: String,
-    ccNumber: Int,
-    onValue: Int,
-    offValue: Int,
-    onToggle: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "MIDI Toggle",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFFB0B0B0)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = status,
-            fontSize = 13.sp,
-            color = Color(0xFF6E6E6E)
-        )
-        Spacer(modifier = Modifier.height(48.dp))
-        Button(
-            onClick = onToggle,
-            modifier = Modifier.size(160.dp),
-            shape = CircleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isOn) Color(0xFFB71C1C) else Color(0xFF2A2A2A)
-            )
-        ) {
-            Text(
-                text = if (isOn) "ON" else "OFF",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "CH1  ·  CC $ccNumber  ·  Val ${if (isOn) onValue else offValue}",
-            fontSize = 13.sp,
-            color = Color(0xFF6E6E6E)
-        )
+        unregisterReceiver(permissionReceiver)
+        connection?.close()
     }
 }
