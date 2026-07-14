@@ -9,112 +9,181 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="25dp">
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="NAM Scaler"
+            android:text="NAM Lab"
             android:textSize="22sp"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="10dp" />
 
         <Button
             android:id="@+id/btnOpenFile"
             android:layout_width="250dp"
-            android:layout_height="55dp"
+            android:layout_height="50dp"
             android:text="ABRIR ARCHIVO .NAM"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:backgroundTint="#4FC3F7"
-            android:layout_marginBottom="15dp" />
+            android:layout_marginBottom="8dp" />
 
         <TextView
             android:id="@+id/tvFileName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ningún archivo seleccionado"
-            android:textSize="13sp"
-            android:textColor="#B0B0B0"
-            android:layout_marginBottom="10dp" />
-
-        <TextView
-            android:id="@+id/tvGainInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textSize="15sp"
-            android:textColor="#FF6B35"
-            android:layout_marginBottom="25dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Factor de escala:"
-            android:textSize="14sp"
-            android:textColor="#B0B0B0" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="5dp">
-
-            <Button
-                android:id="@+id/btnScaleDown"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:text="-"
-                android:textSize="20sp"
-                android:backgroundTint="#F44336" />
-
-            <TextView
-                android:id="@+id/tvScaleFactor"
-                android:layout_width="80dp"
-                android:layout_height="50dp"
-                android:text="1.0"
-                android:textSize="24sp"
-                android:textColor="#FFFFFF"
-                android:gravity="center"
-                android:background="#333333" />
-
-            <Button
-                android:id="@+id/btnScaleUp"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:text="+"
-                android:textSize="20sp"
-                android:backgroundTint="#4CAF50" />
-
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvScaleDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="1.0x = ganancia original"
+            android:text="Ningún archivo"
             android:textSize="12sp"
             android:textColor="#B0B0B0"
-            android:layout_marginBottom="25dp" />
+            android:layout_marginBottom="15dp" />
+
+        <!-- SLIDER 1: PESOS -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="PESOS (Weights)"
+            android:textSize="14sp"
+            android:textColor="#FF6B35"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="5dp">
+
+            <Button android:id="@+id/btnW_Down" android:layout_width="45dp" android:layout_height="45dp"
+                android:text="-" android:textSize="18sp" android:backgroundTint="#F44336" />
+            <TextView android:id="@+id/tvW_Value" android:layout_width="70dp" android:layout_height="45dp"
+                android:text="1.0" android:textSize="20sp" android:textColor="#FFFFFF"
+                android:gravity="center" android:background="#333333" />
+            <Button android:id="@+id/btnW_Up" android:layout_width="45dp" android:layout_height="45dp"
+                android:text="+" android:textSize="18sp" android:backgroundTint="#4CAF50" />
+            <Button android:id="@+id/btnW_Reset" android:layout_width="40dp" android:layout_height="40dp"
+                android:text="↺" android:textSize="14sp" android:backgroundTint="#666666"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- SLIDER 2: HEAD SCALE -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="HEAD SCALE (Volumen salida)"
+            android:textSize="14sp"
+            android:textColor="#FF6B35"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="5dp">
+
+            <Button android:id="@+id/btnH_Down" android:layout_width="45dp" android:layout_height="45dp"
+                android:text="-" android:textSize="18sp" android:backgroundTint="#F44336" />
+            <TextView android:id="@+id/tvH_Value" android:layout_width="70dp" android:layout_height="45dp"
+                android:text="1.0" android:textSize="20sp" android:textColor="#FFFFFF"
+                android:gravity="center" android:background="#333333" />
+            <Button android:id="@+id/btnH_Up" android:layout_width="45dp" android:layout_height="45dp"
+                android:text="+" android:textSize="18sp" android:backgroundTint="#4CAF50" />
+            <Button android:id="@+id/btnH_Reset" android:layout_width="40dp" android:layout_height="40dp"
+                android:text="↺" android:textSize="14sp" android:backgroundTint="#666666"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- SLIDER 3: GAIN METADATA -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="GAIN Metadata (⚠️ experimental)"
+            android:textSize="14sp"
+            android:textColor="#FF6B35"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="5dp">
+
+            <Button android:id="@+id/btnG_Down" android:layout_width="45dp" android:layout_height="45dp"
+                android:text="-" android:textSize="18sp" android:backgroundTint="#F44336" />
+            <TextView android:id="@+id/tvG_Value" android:layout_width="70dp" android:layout_height="45dp"
+                android:text="1.0" android:textSize="20sp" android:textColor="#FFFFFF"
+                android:gravity="center" android:background="#333333" />
+            <Button android:id="@+id/btnG_Up" android:layout_width="45dp" android:layout_height="45dp"
+                android:text="+" android:textSize="18sp" android:backgroundTint="#4CAF50" />
+            <Button android:id="@+id/btnG_Reset" android:layout_width="40dp" android:layout_height="40dp"
+                android:text="↺" android:textSize="14sp" android:backgroundTint="#666666"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- SLIDER 4: MAX VALUE -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MAX VALUE (⚠️ experimental)"
+            android:textSize="14sp"
+            android:textColor="#FF6B35"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="15dp">
+
+            <Button android:id="@+id/btnM_Down" android:layout_width="45dp" android:layout_height="45dp"
+                android:text="-" android:textSize="18sp" android:backgroundTint="#F44336" />
+            <TextView android:id="@+id/tvM_Value" android:layout_width="70dp" android:layout_height="45dp"
+                android:text="1.0" android:textSize="20sp" android:textColor="#FFFFFF"
+                android:gravity="center" android:background="#333333" />
+            <Button android:id="@+id/btnM_Up" android:layout_width="45dp" android:layout_height="45dp"
+                android:text="+" android:textSize="18sp" android:backgroundTint="#4CAF50" />
+            <Button android:id="@+id/btnM_Reset" android:layout_width="40dp" android:layout_height="40dp"
+                android:text="↺" android:textSize="14sp" android:backgroundTint="#666666"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="10dp">
+
+            <Button android:id="@+id/btnResetAll" android:layout_width="120dp" android:layout_height="40dp"
+                android:text="↺ RESET TODO" android:textSize="12sp" android:backgroundTint="#666666"
+                android:layout_marginEnd="8dp" />
+            <Button android:id="@+id/btnReloadOriginal" android:layout_width="120dp" android:layout_height="40dp"
+                android:text="🔄 RECARGAR" android:textSize="12sp" android:backgroundTint="#333333" />
+        </LinearLayout>
 
         <Button
-            android:id="@+id/btnApplyScale"
+            android:id="@+id/btnApplySave"
             android:layout_width="250dp"
-            android:layout_height="60dp"
+            android:layout_height="55dp"
             android:text="APLICAR Y GUARDAR"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:backgroundTint="#FF6B35"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="8dp" />
 
         <TextView
             android:id="@+id/tvResult"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textColor="#4CAF50"
             android:gravity="center" />
 
