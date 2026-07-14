@@ -1,84 +1,40 @@
 package com.studio.nuxcontrollerv2
 
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.graphics.Color
-import android.hardware.usb.UsbDevice
-import android.hardware.usb.UsbManager
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.studio.nuxcontrollerv2.data.CompressorData
-import com.studio.nuxcontrollerv2.data.EffectsData
-import com.studio.nuxcontrollerv2.data.NoiseGateData
-import com.studio.nuxcontrollerv2.models.PedalBank
-import com.studio.nuxcontrollerv2.models.PedalInfo
-import com.studio.nuxcontrollerv2.ui.KnobBuilder
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var usbManager: UsbManager
-    private var connection: android.hardware.usb.UsbDeviceConnection? = null
-    private var endpointOut: android.hardware.usb.UsbEndpoint? = null
-    private val midiSender = MidiSender()
-    private var currentBankIndex = 0
-    private var currentPedalIndex = 0
-    private var toggleOn = false
-
-    private lateinit var btnToggle: Button
-    private lateinit var btnUp: Button
-    private lateinit var btnDown: Button
-    private lateinit var tvPedalName: TextView
+    private lateinit var btnOpenFile: Button
+    private lateinit var btnScaleDown: Button
+    private lateinit var btnScaleUp: Button
+    private lateinit var btnApplyScale: Button
     private lateinit var tvStatus: TextView
-    private lateinit var knobsContainer: LinearLayout
-    private lateinit var knobBuilder: KnobBuilder
+    private lateinit var tvFileName: TextView
+    private lateinit var tvGainInfo: TextView
+    private lateinit var tvScaleFactor: TextView
+    private lateinit var tvScaleDescription: TextView
+    private lateinit var tvResult: TextView
 
-    private lateinit var btnBankNG: Button
-    private lateinit var btnBankCMP: Button
-    private lateinit var btnBankEFX: Button
-    private lateinit var btnBankAMP: Button
-    private lateinit var btnBankIR: Button
-    private lateinit var btnBankEQ: Button
-    private lateinit var btnBankMOD: Button
-    private lateinit var btnBankDLY: Button
-    private lateinit var btnBankRVB: Button
-    private lateinit var btnBankPL: Button
+    private var namData: JSONObject? = null
+    private var currentScale: Float = 1.0f
+    private var originalGain: Float = 0f
+    private var fileName: String = ""
+    private var fileUri: Uri? = null
+    private var pendingNamData: String? = null
 
-    private lateinit var bankButtons: List<Button>
-
-    private val banks = listOf(
-        NoiseGateData.bank,
-        CompressorData.bank,
-        EffectsData.bank,
-        PedalBank("AMP", emptyList()),
-        PedalBank("IR", emptyList()),
-        PedalBank("EQ", emptyList()),
-        PedalBank("MOD", emptyList()),
-        PedalBank("DLY", emptyList()),
-        PedalBank("RVB", emptyList()),
-        PedalBank("PL", emptyList())
-    )
-
-    private val currentBank get() = banks[currentBankIndex]
-    private val currentPedal: PedalInfo?
-        get() = currentBank.pedals.getOrNull(currentPedalIndex)
-
-    private val ACTION_USB_PERMISSION = "com.studio.nuxcontrollerv2.USB_PERMISSION"
-
-    private val permissionReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (ACTION_USB_PERMISSION == intent.action) {
-                val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
-                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                    device?.let { connectToDevice(it) }
-                }
-            }
-        }
+    companion object {
+        private const val PICK_NAM_FILE = 100
+        private const val SAVE_NAM_FILE = 200
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,156 +42,143 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         tvStatus = findViewById(R.id.tvStatus)
-        tvPedalName = findViewById(R.id.tvPedalName)
-        btnToggle = findViewById(R.id.btnToggle)
-        btnUp = findViewById(R.id.btnUp)
-        btnDown = findViewById(R.id.btnDown)
-        knobsContainer = findViewById(R.id.knobsContainer)
+        tvFileName = findViewById(R.id.tvFileName)
+        tvGainInfo = findViewById(R.id.tvGainInfo)
+        tvScaleFactor = findViewById(R.id.tvScaleFactor)
+        tvScaleDescription = findViewById(R.id.tvScaleDescription)
+        tvResult = findViewById(R.id.tvResult)
+        btnOpenFile = findViewById(R.id.btnOpenFile)
+        btnScaleDown = findViewById(R.id.btnScaleDown)
+        btnScaleUp = findViewById(R.id.btnScaleUp)
+        btnApplyScale = findViewById(R.id.btnApplyScale)
 
-        btnBankNG = findViewById(R.id.btnBankNG)
-        btnBankCMP = findViewById(R.id.btnBankCMP)
-        btnBankEFX = findViewById(R.id.btnBankEFX)
-        btnBankAMP = findViewById(R.id.btnBankAMP)
-        btnBankIR = findViewById(R.id.btnBankIR)
-        btnBankEQ = findViewById(R.id.btnBankEQ)
-        btnBankMOD = findViewById(R.id.btnBankMOD)
-        btnBankDLY = findViewById(R.id.btnBankDLY)
-        btnBankRVB = findViewById(R.id.btnBankRVB)
-        btnBankPL = findViewById(R.id.btnBankPL)
-
-        bankButtons = listOf(btnBankNG, btnBankCMP, btnBankEFX, btnBankAMP, btnBankIR, btnBankEQ, btnBankMOD, btnBankDLY, btnBankRVB, btnBankPL)
-
-        knobBuilder = KnobBuilder(this, midiSender, knobsContainer)
-        usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
-
-        registerReceiver(permissionReceiver, IntentFilter(ACTION_USB_PERMISSION))
-
-        setupButtons()
-        findDevice()
+        btnOpenFile.setOnClickListener { openFilePicker() }
+        btnScaleDown.setOnClickListener { adjustScale(-0.1f) }
+        btnScaleUp.setOnClickListener { adjustScale(0.1f) }
+        btnApplyScale.setOnClickListener { applyAndSave() }
     }
 
-    private fun findDevice() {
-        val devices = usbManager.deviceList
-        if (devices.isEmpty()) {
-            tvStatus.text = "No hay dispositivos USB"
-            return
+    private fun openFilePicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
         }
-        val device = devices.values.first()
-        tvStatus.text = "Encontrado: ${device.productName}"
-        if (usbManager.hasPermission(device)) connectToDevice(device)
-        else requestPermission(device)
+        startActivityForResult(intent, PICK_NAM_FILE)
     }
 
-    private fun requestPermission(device: UsbDevice) {
-        val pi = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE)
-        usbManager.requestPermission(device, pi)
-    }
-
-    private fun connectToDevice(device: UsbDevice) {
-        connection = usbManager.openDevice(device) ?: return
-        for (i in 0 until device.interfaceCount) {
-            val intf = device.getInterface(i)
-            connection?.claimInterface(intf, true)
-            for (j in 0 until intf.endpointCount) {
-                val ep = intf.getEndpoint(j)
-                if (ep.direction == android.hardware.usb.UsbConstants.USB_DIR_OUT &&
-                    ep.type == android.hardware.usb.UsbConstants.USB_ENDPOINT_XFER_BULK) {
-                    endpointOut = ep
-                    midiSender.setConnection(connection, endpointOut)
-                    tvStatus.text = "Conectado: ${device.productName}"
-                    enableAll(true)
-                    highlightBank()
-                    updateDisplay()
-                    return
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        
+        if (resultCode != RESULT_OK || data == null) return
+        
+        when (requestCode) {
+            PICK_NAM_FILE -> {
+                data.data?.let { uri ->
+                    fileUri = uri
+                    fileName = uri.lastPathSegment ?: "desconocido"
+                    tvFileName.text = "Archivo: $fileName"
+                    loadNamFile(uri)
+                }
+            }
+            SAVE_NAM_FILE -> {
+                data.data?.let { uri ->
+                    try {
+                        contentResolver.openOutputStream(uri)?.use { stream ->
+                            pendingNamData?.let { dataStr ->
+                                stream.write(dataStr.toByteArray(Charsets.UTF_8))
+                            }
+                        }
+                        Toast.makeText(this, "Archivo guardado", Toast.LENGTH_SHORT).show()
+                        tvResult.text = "Guardado: ${uri.lastPathSegment}"
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "Error al guardar: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }
     }
 
-    private fun enableAll(enabled: Boolean) {
-        btnToggle.isEnabled = enabled
-        btnUp.isEnabled = enabled
-        btnDown.isEnabled = enabled
-        for (btn in bankButtons) btn.isEnabled = enabled
-    }
+    private fun loadNamFile(uri: Uri) {
+        try {
+            contentResolver.openInputStream(uri)?.use { stream ->
+                val reader = BufferedReader(InputStreamReader(stream))
+                val content = reader.readText()
+                namData = JSONObject(content)
 
-    private fun highlightBank() {
-        for (i in bankButtons.indices) {
-            if (i == currentBankIndex) {
-                bankButtons[i].setBackgroundColor(Color.parseColor("#0288D1"))
-                bankButtons[i].setTextColor(Color.WHITE)
-            } else {
-                bankButtons[i].setBackgroundColor(Color.parseColor("#4FC3F7"))
-                bankButtons[i].setTextColor(Color.WHITE)
+                val submodels = namData?.optJSONArray("submodels")
+                    ?: namData?.getJSONObject("config")?.optJSONArray("submodels")
+                
+                if (submodels != null && submodels.length() > 0) {
+                    val firstModel = submodels.getJSONObject(0)
+                    val model = firstModel.optJSONObject("model")
+                    val metadata = model?.optJSONObject("metadata")
+                    originalGain = metadata?.optDouble("gain")?.toFloat() ?: 0f
+                    tvGainInfo.text = "Ganancia original: ${"%.4f".format(originalGain)}"
+                }
+
+                Toast.makeText(this, "Archivo cargado", Toast.LENGTH_SHORT).show()
             }
-        }
-    }
-
-    private fun updateDisplay() {
-        val pedal = currentPedal
-        if (pedal != null) {
-            tvPedalName.text = pedal.name
-            btnToggle.text = "OFF"
-            toggleOn = false
-            knobBuilder.build(pedal)
-        } else {
-            tvPedalName.text = "Sin datos"
-            btnToggle.text = "OFF"
-            toggleOn = false
-            knobsContainer.removeAllViews()
-        }
-        highlightBank()
-    }
-
-    private fun setupButtons() {
-        btnToggle.setOnClickListener {
-            val pedal = currentPedal ?: return@setOnClickListener
-            if (toggleOn) {
-                midiSender.sendPedalOff(pedal.toggleCC, pedal.pedalIndex)
-                toggleOn = false
-                btnToggle.text = "OFF"
-            } else {
-                midiSender.sendPedalOn(pedal.toggleCC, pedal.pedalIndex)
-                toggleOn = true
-                btnToggle.text = "ON"
-            }
-        }
-
-        btnUp.setOnClickListener {
-            val size = currentBank.pedals.size
-            if (size > 0 && currentPedalIndex < size - 1) {
-                currentPedalIndex++
-                updateDisplay()
-                val p = currentPedal ?: return@setOnClickListener
-                midiSender.sendPedalOn(p.toggleCC, p.pedalIndex)
-                toggleOn = true
-                btnToggle.text = "ON"
-            }
-        }
-
-        btnDown.setOnClickListener {
-            if (currentPedalIndex > 0) {
-                currentPedalIndex--
-                updateDisplay()
-                val p = currentPedal ?: return@setOnClickListener
-                midiSender.sendPedalOn(p.toggleCC, p.pedalIndex)
-                toggleOn = true
-                btnToggle.text = "ON"
-            }
-        }
-
-        for (i in bankButtons.indices) {
-            bankButtons[i].setOnClickListener {
-                currentBankIndex = i
-                currentPedalIndex = 0
-                updateDisplay()
-            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        unregisterReceiver(permissionReceiver)
-        connection?.close()
+    private fun adjustScale(delta: Float) {
+        currentScale = ((currentScale + delta) * 10).toInt() / 10f
+        currentScale = currentScale.coerceIn(0.1f, 5.0f)
+
+        tvScaleFactor.text = String.format("%.1f", currentScale)
+
+        val newGain = originalGain * currentScale
+        val percent = (currentScale * 100).toInt()
+        tvScaleDescription.text = "${percent}% = ganancia ${"%.4f".format(newGain)}"
+    }
+
+    private fun applyAndSave() {
+        val data = namData
+        if (data == null) {
+            Toast.makeText(this, "Abre un archivo primero", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        try {
+            val submodels = data.optJSONArray("submodels")
+                ?: data.getJSONObject("config")?.optJSONArray("submodels")
+
+            var totalWeights = 0
+            if (submodels != null) {
+                for (i in 0 until submodels.length()) {
+                    val submodel = submodels.getJSONObject(i)
+                    val model = submodel.optJSONObject("model")
+                    val weights = model?.optJSONArray("weights")
+                    if (weights != null) {
+                        for (j in 0 until weights.length()) {
+                            val original = weights.getDouble(j)
+                            weights.put(j, original * currentScale)
+                            totalWeights++
+                        }
+                    }
+
+                    val metadata = model?.optJSONObject("metadata")
+                    if (metadata != null) {
+                        val currentGain = metadata.optDouble("gain", 1.0)
+                        metadata.put("gain", currentGain * currentScale)
+                    }
+                }
+            }
+
+            val outputName = fileName.replace(".nam", "_SCALE_${currentScale}.nam")
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "application/octet-stream"
+                putExtra(Intent.EXTRA_TITLE, outputName)
+            }
+            pendingNamData = data.toString()
+            startActivityForResult(intent, SAVE_NAM_FILE)
+
+            tvResult.text = "Escalados $totalWeights pesos por ${currentScale}x"
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 }
