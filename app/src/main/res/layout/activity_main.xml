@@ -1,34 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#1A1A1A">
-<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:padding="15dp">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1A1A1A">
 
-<TextView android:id="@+id/tvStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Buscando NUX..." android:textSize="10sp" android:textColor="#B0B0B0" android:layout_marginBottom="8dp" android:gravity="center"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="25dp">
 
-<HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="10dp" android:scrollbars="none">
-<LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center" android:orientation="horizontal">
-<Button android:id="@+id/btnBankNG" android:layout_width="12mm" android:layout_height="12mm" android:text="NG" android:textSize="7sp" android:drawableTop="@drawable/ic_ng" android:gravity="center" android:enabled="false" android:backgroundTint="#4FC3F7" android:textColor="#FFFFFF" android:padding="2dp" android:lineSpacingExtra="-4dp"/>
-<Button android:id="@+id/btnBankCMP" android:layout_width="10mm" android:layout_height="10mm" android:text="CMP" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankEFX" android:layout_width="10mm" android:layout_height="10mm" android:text="EFX" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankAMP" android:layout_width="10mm" android:layout_height="10mm" android:text="AMP" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankIR" android:layout_width="10mm" android:layout_height="10mm" android:text="IR" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankEQ" android:layout_width="10mm" android:layout_height="10mm" android:text="EQ" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankMOD" android:layout_width="10mm" android:layout_height="10mm" android:text="MOD" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankDLY" android:layout_width="10mm" android:layout_height="10mm" android:text="DLY" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankRVB" android:layout_width="10mm" android:layout_height="10mm" android:text="RVB" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-<Button android:id="@+id/btnBankPL" android:layout_width="10mm" android:layout_height="10mm" android:text="PL" android:textSize="10sp" android:enabled="false" android:backgroundTint="#333333" android:textColor="#B0B0B0"/>
-</LinearLayout>
-</HorizontalScrollView>
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NAM Scaler"
+            android:textSize="22sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp" />
 
-<Button android:id="@+id/btnToggle" android:layout_width="200dp" android:layout_height="100dp" android:text="OFF" android:textSize="26sp" android:textStyle="bold" android:enabled="false" android:layout_marginBottom="10dp"/>
+        <Button
+            android:id="@+id/btnOpenFile"
+            android:layout_width="250dp"
+            android:layout_height="55dp"
+            android:text="ABRIR ARCHIVO .NAM"
+            android:textSize="16sp"
+            android:backgroundTint="#4FC3F7"
+            android:layout_marginBottom="15dp" />
 
-<TextView android:id="@+id/tvPedalName" android:layout_width="200dp" android:layout_height="wrap_content" android:text="Noise Gate" android:textSize="18sp" android:textStyle="bold" android:textColor="#FFFFFF" android:gravity="center" android:layout_marginBottom="8dp"/>
+        <TextView
+            android:id="@+id/tvFileName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ningún archivo seleccionado"
+            android:textSize="13sp"
+            android:textColor="#B0B0B0"
+            android:layout_marginBottom="10dp" />
 
-<LinearLayout android:layout_width="200dp" android:layout_height="wrap_content" android:gravity="center" android:orientation="horizontal">
-<Button android:id="@+id/btnDown" android:layout_width="0dp" android:layout_height="45dp" android:layout_weight="1" android:text="◀" android:textSize="18sp" android:enabled="false"/>
-<Button android:id="@+id/btnUp" android:layout_width="0dp" android:layout_height="45dp" android:layout_weight="1" android:text="▶" android:textSize="18sp" android:enabled="false"/>
-</LinearLayout>
+        <TextView
+            android:id="@+id/tvGainInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"
+            android:textColor="#FF6B35"
+            android:layout_marginBottom="25dp" />
 
-<LinearLayout android:id="@+id/knobsContainer" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:layout_marginTop="15dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Factor de escala:"
+            android:textSize="14sp"
+            android:textColor="#B0B0B0" />
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp">
+
+            <Button
+                android:id="@+id/btnScaleDown"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:text="-"
+                android:textSize="20sp"
+                android:backgroundTint="#F44336" />
+
+            <TextView
+                android:id="@+id/tvScaleFactor"
+                android:layout_width="80dp"
+                android:layout_height="50dp"
+                android:text="1.0"
+                android:textSize="24sp"
+                android:textColor="#FFFFFF"
+                android:gravity="center"
+                android:background="#333333" />
+
+            <Button
+                android:id="@+id/btnScaleUp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:text="+"
+                android:textSize="20sp"
+                android:backgroundTint="#4CAF50" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvScaleDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1.0x = ganancia original"
+            android:textSize="12sp"
+            android:textColor="#B0B0B0"
+            android:layout_marginBottom="25dp" />
+
+        <Button
+            android:id="@+id/btnApplyScale"
+            android:layout_width="250dp"
+            android:layout_height="60dp"
+            android:text="APLICAR Y GUARDAR"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:backgroundTint="#FF6B35"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:id="@+id/tvResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="14sp"
+            android:textColor="#4CAF50"
+            android:gravity="center" />
+
+    </LinearLayout>
 </ScrollView>
